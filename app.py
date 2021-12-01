@@ -19,5 +19,5 @@ def hello_world():
 
     # Format HTML string with results and return
     query_result = '<br>'.join(map(str, query_result))
-    return_string = "<b>ID, Name in table \"test2\"</b><br>" + query_result
+    return_string = "<b>ID, Name in table \"test\"</b><br>" + query_result
     return return_string
