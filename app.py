@@ -3,6 +3,15 @@
 from flask import Flask, request, session, redirect, url_for, flash, render_template_string
 import markdown.extensions.fenced_code
 import mysql.connector
+import sqlalchemy
+import pandas as pd
+
+# Database credentials
+database_username = 'admin'
+database_password = 'admin'
+database_ip       = 'test-final-db.mysql.database.azure.com:3306'
+database_name     = 'final'
+ssl_args = {'ssl_ca': 'ssl_cert.pem'}
 
 app = Flask(__name__)
 app.secret_key = 'BAD_SECRET_KEY'
@@ -17,26 +26,122 @@ def home():
     <h3>Task 1: Cool_Group_Name </h3>
     <h3>Task 2: <a href="/task2">Questions Answered</a></h3>
     <h3>Task 3: <a href="/set_info">Dynamic Username/Password</a></h3>
-    <h3>Task 4: </h3>
-    <h3>Task 5: </h3>
+    <h3>Tasks 4/5: <a href="/task4">Data Pull</a> (Query may take some time, please be patient.)</h3>
     <h3>Task 6: </h3>
     <h3>Task 7: </h3>
-    <h3>Task 8: </h3>
+    <h3>Task 8: <a href="/task8">Data Upload</a></h3>
     <h3>Task 9: <a href="/task9">Questions Answered</a></h3>
     """
 
 @app.route("/task4")
 def task4():
-    # Run query to get all records in table "test"
-    cursor = cnx.cursor()
-    cursor.execute("SELECT * FROM test")
-    query_result = cursor.fetchall()
+    # Get houshold number from request, default to 10
+    hshd_num = request.args.get("household")
+    if hshd_num is None:
+        hshd_num = "10"
 
-    # Format HTML string with results and return
-    query_result = '<br>'.join(map(str, query_result))
-    return_string = "<b>ID, Name in table \"test\"</b><br>" + query_result
+    # SQL query to join the three tables
+    sql_query = "select households.HSHD_NUM, transactions.BASKET_NUM, transactions.PURCHASE_, transactions.PRODUCT_NUM, products.DEPARTMENT, products.COMMODITY, transactions.SPEND, transactions.UNITS, transactions.STORE_R, transactions.WEEK_NUM, transactions.YEAR, households.L, households.AGE_RANGE, households.MARITAL, households.INCOME_RANGE, households.HOMEOWNER, households.HSHD_COMPOSITION, households.HH_SIZE, households.CHILDREN from households inner join transactions on households.HSHD_NUM=transactions.HSHD_NUM inner join products on transactions.PRODUCT_NUM=products.PRODUCT_NUM where households.HSHD_NUM={};".format(hshd_num)
 
-    return return_string
+    # Create database engine for pandas API
+    database_connection = sqlalchemy.create_engine('mysql+mysqlconnector://{0}:{1}@{2}/{3}'.
+                                                format(database_username, database_password, 
+                                                        database_ip, database_name), connect_args=ssl_args)
+
+    # Execute the query and return the result as a dataframe, convert to HTML table
+    result = pd.read_sql(sql_query, database_connection).sort_values(["HSHD_NUM", "BASKET_NUM", "PURCHASE_", "PRODUCT_NUM", "DEPARTMENT", "COMMODITY"], ignore_index=True)
+    html_result = result.to_html(classes='table table-striped', table_id="results")
+
+    # Return HTML for page
+    form = '''
+        <form>
+            <input type="text" name="household">
+            <input type="submit" name="query" value="Query">
+        </form>
+        Queries may take some time, please be patient.<br>
+        Returned {} entries.<br>
+        <input type="text" id="searchTable" onkeyup="searchTable()" placeholder="Search table...">
+        '''.format(len(result.index))
+
+    # Add Javascript for searching the table
+    form += '''        <script>
+        function searchTable() {
+        // Declare variables
+        var input, filter, table, tr, td, i, j, txtValue, found;
+        input = document.getElementById("searchTable");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("results");
+        tr = table.getElementsByTagName("tr");
+
+        // Loop through all table rows, and hide those who don't match the search query
+        for (i = 0; i < tr.length; i++) {
+            found = false;
+            td = tr[i].getElementsByTagName("td");
+            if (!(td[0])) continue;
+            for (j = 0; j < td.length; j++) {
+                txtValue = td[j].textContent || td[j].innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    found = true;
+                }
+            }
+            if (found) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+        }
+        </script>
+        <a href="/">Return Home</a>'''
+    return_html = form + html_result
+    return return_html
+
+# Web page for data upload
+@app.route("/task8", methods=["GET", "POST"])
+def task8():
+    # Uploaded files
+    if request.method == 'POST':
+        print(request.files)
+        if 'trans' in request.files and request.files['trans'].filename != '':
+            insert_csv(request.files['trans'], 'transactions')
+        if 'house' in request.files and request.files['house'].filename != '':
+            insert_csv(request.files['house'], 'households')
+        if 'prod' in request.files and request.files['prod'].filename != '':
+            insert_csv(request.files['prod'], 'products')
+        return "Data Uploaded!"
+
+    # Form to upload CSV files
+    upload_form = '''
+                <!doctype html>
+                <title>Upload CSV Data</title>
+                <h1>Upload CSV Data</h1>
+                Uploading large amounts of data may take a long time. Please be patient and do not refresh the page while uploading.<br><br>
+                <form method=post enctype=multipart/form-data>
+                    <div>Transactions CSV</div><input type=file name=trans><br>
+                    <div>Households CSV</div><input type=file name=house><br>
+                    <div>Products CSV</div><input type=file name=prod><br>
+                    <input type=submit value=Upload>
+                </form>
+                <a href="/">Return Home</a>
+                '''
+    return upload_form
+    
+# Insert a CSV file into a specified table in the database
+def insert_csv(csv, table):
+    # Create dataframe from CSV
+    df = pd.read_csv(csv).rename(columns=lambda x: x.strip()) # remove whitespace from column names
+
+    # Create database engine for pandas API
+    database_connection = sqlalchemy.create_engine('mysql+mysqlconnector://{0}:{1}@{2}/{3}'.
+                                               format(database_username, database_password, 
+                                                      database_ip, database_name), connect_args=ssl_args)
+
+    # Insert dataframe into table
+    df.to_sql(name=table, 
+              schema='final',
+              con=database_connection,
+              if_exists='append',
+              index=False)
 
 
 @app.route("/task9")
