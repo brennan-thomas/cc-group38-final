@@ -1,9 +1,8 @@
 # Sample flask app showing database connection and query
 
 from flask import Flask, request, session, redirect, url_for, flash, render_template_string
-import mysql.connector
-from collections import Counter
 import markdown.extensions.fenced_code
+import mysql.connector
 
 app = Flask(__name__)
 app.secret_key = 'BAD_SECRET_KEY'
@@ -14,17 +13,7 @@ cnx = mysql.connector.connect(user="admin", password="admin", host="test-final-d
 # Root web page
 @app.route("/")
 def home():
-
-    # Run query to get all records in table "test"
-    cursor = cnx.cursor()
-    cursor.execute("SELECT * FROM test")
-    query_result = cursor.fetchall()
-
-    # Format HTML string with results and return
-    query_result = '<br>'.join(map(str, query_result))
-    return_string = "<b>ID, Name in table \"test\"</b><br>" + query_result
-
-    return return_string + """<br><br>
+    return """<h1>Home</h1>
     <h3>Task 1: Cool_Group_Name </h3>
     <h3>Task 2: <a href="/task2">Questions Answered</a></h3>
     <h3>Task 3: <a href="/set_info">Dynamic Username/Password</a></h3>
@@ -36,6 +25,20 @@ def home():
     <h3>Task 9: <a href="/task9">Questions Answered</a></h3>
     """
 
+@app.route("/task4")
+def task4():
+    # Run query to get all records in table "test"
+    cursor = cnx.cursor()
+    cursor.execute("SELECT * FROM test")
+    query_result = cursor.fetchall()
+
+    # Format HTML string with results and return
+    query_result = '<br>'.join(map(str, query_result))
+    return_string = "<b>ID, Name in table \"test\"</b><br>" + query_result
+
+    return return_string
+
+
 @app.route("/task9")
 def task9():
     readme_file = open("task9.md", "r")
@@ -43,6 +46,7 @@ def task9():
         readme_file.read(), extensions=["fenced_code"]
     )
     return md_template_string
+
 
 @app.route("/task2")
 def task2():
