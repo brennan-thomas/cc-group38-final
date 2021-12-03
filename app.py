@@ -1,10 +1,11 @@
 # Sample flask app showing database connection and query
 
-from flask import Flask, request, session, redirect, url_for, flash, render_template_string
+from flask import Flask, request, session, redirect, url_for, flash, render_template_string, render_template
 import markdown.extensions.fenced_code
 import mysql.connector
 import sqlalchemy
 import pandas as pd
+import os
 
 # Database credentials
 database_username = 'admin'
@@ -27,11 +28,38 @@ def home():
     <h3>Task 2: <a href="/task2">Questions Answered</a></h3>
     <h3>Task 3: <a href="/set_info">Dynamic Username/Password</a></h3>
     <h3>Tasks 4/5: <a href="/task4">Data Pull</a> (Query may take some time, please be patient.)</h3>
-    <h3>Task 6: </h3>
-    <h3>Task 7: </h3>
+    <h3>Task 6: <a href="/task6">Web Page Data Display1</a></h3></h3>
+    <h3>Task 7: <a href="/task7">Web Page Data Display2</a></h3></h3>
     <h3>Task 8: <a href="/task8">Data Upload</a></h3>
     <h3>Task 9: <a href="/task9">Questions Answered</a></h3>
     """
+
+@app.route("/task6")
+def task6():
+
+    PEOPLE_FOLDER = os.path.join('static', 'people_photo')
+    app.config['UPLOAD_FOLDER'] = PEOPLE_FOLDER
+
+    full_filename = os.path.join(app.config['UPLOAD_FOLDER'], 'purchases.png')
+    full_filename2 = os.path.join(app.config['UPLOAD_FOLDER'], 'spending.png')
+    full_filename3 = os.path.join(app.config['UPLOAD_FOLDER'], 'commodity.png')
+
+    return render_template("index.html", user_image = full_filename, user_image2 = full_filename2, user_image3 = full_filename3)
+
+
+@app.route("/task7")
+def task7():
+
+    PEOPLE_FOLDER = os.path.join('static', 'people_photo')
+    app.config['UPLOAD_FOLDER'] = PEOPLE_FOLDER
+
+    full_filename = os.path.join(app.config['UPLOAD_FOLDER'], 'income.png')
+    full_filename2 = os.path.join(app.config['UPLOAD_FOLDER'], 'household.png')
+    full_filename3 = os.path.join(app.config['UPLOAD_FOLDER'], 'marital.png')
+    full_filename4 = os.path.join(app.config['UPLOAD_FOLDER'], 'homeowner.png')
+
+    return render_template("index.html", user_image = full_filename, user_image2 = full_filename2, user_image3 = full_filename3, user_image4 = full_filename4)
+
 
 @app.route("/task4")
 def task4():
