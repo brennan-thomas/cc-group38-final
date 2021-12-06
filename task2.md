@@ -1,18 +1,4 @@
 # Task 2
-## Retail Question 1
-### How does customer engagement change over time?  
-Pending.
-### Do households spend less or more?
-Pending.
-### What categories are growing or shrinking with changing customer engagement?
-Pending.
-
-## Retail Question 2
-### Which demographic factors (e.g. household size, presence of children, income) appear to affect customer engagement?
-Pending.
-### How do they affect customer engagement with certain categories?  
-Pending.
-### How might we re-engage customers within the store? Or within a specific category?
-Pending.
+In order to answer the two retail questions, we will upload all of the CSV files to a database, where we can perform queries to join the tables together and create plots based on the data relationships. These plots will provide visualizations that enable us to determine which factors drive customer engagement. For example, performing a query of household spending grouped by year would allow us to see how much households are spending year to year, which is a good indicator of engagement. Since the data files include many categories of information, creating a database would allow us to find relationships in the data that are difficult to see from looking at the raw data alone.
 
 [Return Home](/)

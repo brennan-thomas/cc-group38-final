@@ -24,7 +24,7 @@ cnx = mysql.connector.connect(user="admin", password="admin", host="test-final-d
 @app.route("/")
 def home():
     return """<h1>Home</h1>
-    <h3>Task 1: Cool_Group_Name </h3>
+    <h3>Task 1: Azure Allies, Team Lead: Matt Klich </h3>
     <h3>Task 2: <a href="/task2">Questions Answered</a></h3>
     <h3>Task 3: <a href="/set_info">Dynamic Username/Password</a></h3>
     <h3>Tasks 4/5: <a href="/task4">Data Pull</a> (Query may take some time, please be patient.)</h3>
@@ -37,18 +37,29 @@ def home():
 @app.route("/task6")
 def task6():
 
+    readme_file = open("task6.md", "r")
+    md_template_string = markdown.markdown(
+        readme_file.read(), extensions=["fenced_code"]
+    )
+
     PEOPLE_FOLDER = os.path.join('static', 'people_photo')
     app.config['UPLOAD_FOLDER'] = PEOPLE_FOLDER
 
     full_filename = os.path.join(app.config['UPLOAD_FOLDER'], 'purchases.png')
     full_filename2 = os.path.join(app.config['UPLOAD_FOLDER'], 'spending.png')
     full_filename3 = os.path.join(app.config['UPLOAD_FOLDER'], 'commodity.png')
+    full_filename4 = os.path.join(app.config['UPLOAD_FOLDER'], 'income.png')
 
-    return render_template("index.html", user_image = full_filename, user_image2 = full_filename2, user_image3 = full_filename3)
+    return render_template("index.html", writeup_file=md_template_string, user_image = full_filename, user_image2 = full_filename2, user_image3 = full_filename3, user_image4 = full_filename4)
 
 
 @app.route("/task7")
 def task7():
+
+    readme_file = open("task7.md", "r")
+    md_template_string = markdown.markdown(
+        readme_file.read(), extensions=["fenced_code"]
+    )
 
     PEOPLE_FOLDER = os.path.join('static', 'people_photo')
     app.config['UPLOAD_FOLDER'] = PEOPLE_FOLDER
@@ -58,7 +69,7 @@ def task7():
     full_filename3 = os.path.join(app.config['UPLOAD_FOLDER'], 'marital.png')
     full_filename4 = os.path.join(app.config['UPLOAD_FOLDER'], 'homeowner.png')
 
-    return render_template("index.html", user_image = full_filename, user_image2 = full_filename2, user_image3 = full_filename3, user_image4 = full_filename4)
+    return render_template("index.html", writeup_file=md_template_string, user_image = full_filename, user_image2 = full_filename2, user_image3 = full_filename3, user_image4 = full_filename4)
 
 
 @app.route("/task4")
@@ -83,7 +94,7 @@ def task4():
     # Return HTML for page
     form = '''
         <form>
-            <input type="text" name="household">
+            <input type="text" name="household" placeholder="Enter household number...">
             <input type="submit" name="query" value="Query">
         </form>
         Queries may take some time, please be patient.<br>
